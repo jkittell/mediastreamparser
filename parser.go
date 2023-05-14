@@ -13,12 +13,12 @@ const (
 	DASH
 )
 
-type Scanner struct {
+type Parser struct {
 	logger         *logger.Logger
 	maxConcurrency int64
 }
 
-func (s *Scanner) Scan(url string, format ContentFormat) (*array.Array[Result], error) {
+func (p *Parser) Run(url string, format ContentFormat) (*array.Array[Result], error) {
 	var results *array.Array[Result]
 	var err error
 
@@ -32,9 +32,9 @@ func (s *Scanner) Scan(url string, format ContentFormat) (*array.Array[Result], 
 	}
 }
 
-func New() *Scanner {
-	scanner := &Scanner{
-		logger: logger.New("/tmp/", "ottscanner.log"),
+func New() *Parser {
+	parser := &Parser{
+		logger: logger.New("/tmp/", "mediastreamparser.log"),
 	}
-	return scanner
+	return parser
 }

@@ -22,45 +22,68 @@ import (
 
 */
 
+type segmentTemplate struct {
+	segmentDuration  uint64
+	timescale        uint64
+	startNumber      uint64
+	manifestDuration float64
+	baseURL          string
+	representationId string
+	media            string
+	playlistURL      string
+	streamName       string
+}
+
+type segmentTimeline struct {
+	baseURL          string
+	representationId string
+	media            string
+	playlistURL      string
+}
+
 // calculateDashSegmentTimestamp is used to calculate the timestamp values for the segment in the dash segment timeline
-func calculateDashSegmentTimestamp(timestampOfFirstSegment *uint64, segmentDuration uint64, segmentRepeat *int64) []uint64 {
+func calculateDashSegmentTimestamp(timestampOfFirstSegment uint64, segmentDuration uint64, segmentRepeat int64) []uint64 {
 	var timestamps []uint64
 	var timestamp uint64
-
 	var i int64
 
 	// Loop the number of times indicated by the segment repeat value
-	for i = 0; i < *segmentRepeat; i++ {
-		// If it's the first loop use the timestamp of the first segment
-		// otherwise increment the timestamp by the segment duration
-		if i > 0 {
-			timestamp = timestamp + segmentDuration
-		} else {
-			timestamp = *timestampOfFirstSegment
+	if segmentRepeat > 0 {
+		for i = 0; i < segmentRepeat; i++ {
+			// If it's the first loop use the timestamp of the first segment
+			// otherwise increment the timestamp by the segment duration
+			if i > 0 {
+				timestamp = timestamp + segmentDuration
+			} else {
+				timestamp = timestampOfFirstSegment
+			}
+			timestamps = append(timestamps, timestamp)
 		}
-		timestamps = append(timestamps, timestamp)
+	} else {
+		timestamps = append(timestamps, timestampOfFirstSegment)
 	}
+
 	return timestamps
 }
 
-func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, baseURL, representationId, media string, results *array.Array[Result]) {
+func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, segmentTimeline segmentTimeline, results *array.Array[Result]) {
 	for _, timestamp := range dashSegmentTimestamps {
 		var representationRegex = `\$RepresentationID\$`
 		var timeRegex = `\$Time\$`
 
 		var segmentName string
 		var r = regexp.MustCompile(representationRegex)
-		segmentName = r.ReplaceAllString(media, representationId)
+		segmentName = r.ReplaceAllString(segmentTimeline.media, segmentTimeline.representationId)
 
 		var n = regexp.MustCompile(timeRegex)
 		segmentName = n.ReplaceAllString(segmentName, fmt.Sprint(timestamp))
 
 		result := Result{
-			playlistURL:    "",
-			streamName:     "",
+			playlistURL:    segmentTimeline.playlistURL,
+			streamName:     segmentTimeline.representationId,
 			streamURL:      "",
 			segmentName:    segmentName,
-			segmentURL:     fmt.Sprintf("%s/%s", baseURL, segmentName),
+			segmentURL:     fmt.Sprintf("%s/%s", segmentTimeline.baseURL, segmentName),
 			byteRangeStart: -1,
 			byteRangeSize:  -1,
 		}
@@ -68,41 +91,39 @@ func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, baseURL, rep
 	}
 }
 
-func getSegmentsFromSegmentTemplate(segmentDuration, timescale, startNumber, manifestDuration uint64, baseURL, representationId, media string, results *array.Array[Result]) {
+// TODO init
+func getSegmentsFromSegmentTemplate(segmentTemplate segmentTemplate, results *array.Array[Result]) {
 	// get the segment size
 	// duration="900000" / timescale="90000"
 	// so 10 second segments
-	segmentSize := segmentDuration / timescale
-
-	// the media presentation duration is the size of the sliding window
-	// mediaPresentationDuration="PT0H15M10S"
+	segmentSize := segmentTemplate.segmentDuration / segmentTemplate.timescale
 
 	// divide the media presentation duration / segment size
 	// to get the number of segments
-	numberOfSegments := manifestDuration / segmentSize
+	numberOfSegments := uint64(segmentTemplate.manifestDuration) / segmentSize
 
 	// start number - N where N is number of segments to get the last
 	// segment in the window then increment N times
-	N := startNumber + numberOfSegments
+	N := segmentTemplate.startNumber + numberOfSegments
 
-	for i := startNumber; i < N; i++ {
+	for i := segmentTemplate.startNumber; i < N; i++ {
 		segmentNumber := fmt.Sprintf("%d", i)
 		var representationRegex = `\$RepresentationID\$`
 		var numberRegex = `\$Number\$`
 
 		var segmentName string
 		var r = regexp.MustCompile(representationRegex)
-		segmentName = r.ReplaceAllString(media, representationId)
+		segmentName = r.ReplaceAllString(segmentTemplate.media, segmentTemplate.representationId)
 
 		var n = regexp.MustCompile(numberRegex)
 		segmentName = n.ReplaceAllString(segmentName, segmentNumber)
 
 		result := Result{
-			playlistURL:    "",
-			streamName:     "",
+			playlistURL:    segmentTemplate.playlistURL,
+			streamName:     segmentTemplate.streamName,
 			streamURL:      "",
 			segmentName:    segmentName,
-			segmentURL:     fmt.Sprintf("%s/%s", baseURL, segmentName),
+			segmentURL:     fmt.Sprintf("%s/%s", segmentTemplate.baseURL, segmentName),
 			byteRangeStart: -1,
 			byteRangeSize:  -1,
 		}
@@ -124,12 +145,11 @@ func getManifest(url string) *mpd.MPD {
 }
 
 func parseDASH(url string) (*array.Array[Result], error) {
-	var results *array.Array[Result]
+	results := array.New[Result]()
 	representations := make(map[string]string)
 
 	var segmentDuration uint64
 	var timescale uint64
-	var manifestDuration uint64
 	var startNumber uint64
 	var baseURL string
 	var representationId string
@@ -139,24 +159,23 @@ func parseDASH(url string) (*array.Array[Result], error) {
 
 	dashManifest := getManifest(url)
 
-	/*
-		data, err := json.MarshalIndent(dashManifest, "", "    ")
-		if err != nil {
-			panic(err)
+	var manifestDuration float64
+
+	if dashManifest.Type != nil {
+		if *dashManifest.Type == "static" {
+			d, err := dashManifest.MediaPresentationDuration.ToSeconds()
+			if err != nil {
+				return results, err
+			}
+			manifestDuration = d
+		} else if *dashManifest.Type == "dynamic" {
+			d, err := dashManifest.TimeShiftBufferDepth.ToSeconds()
+			if err != nil {
+				return results, err
+			}
+			manifestDuration = d
 		}
-		fmt.Println(string(data))
-
-	*/
-	manifestDuration = 900
-	//fmt.Println(mpdStr)
-	//d, err := duration.ParseISO8601(mpdStr)
-	//if err != nil {
-	//panic(err)
-	//}
-
-	//x := d.M * 60
-	//y := d.TS
-	//xy := x + y
+	}
 
 	for _, period := range dashManifest.Period {
 		for _, set := range period.AdaptationSets {
@@ -168,24 +187,40 @@ func parseDASH(url string) (*array.Array[Result], error) {
 
 				if rep.SegmentTemplate.StartNumber != nil {
 					startNumber = *rep.SegmentTemplate.StartNumber
-
 					segmentDuration = *rep.SegmentTemplate.Duration
-
-					// get segments for this representation
-					getSegmentsFromSegmentTemplate(segmentDuration, timescale, startNumber, manifestDuration, baseURL, representationId, media, results)
-					//representation.Segments = segments
-
-					//representations.Push(representation)
+					template := segmentTemplate{
+						segmentDuration:  segmentDuration,
+						timescale:        timescale,
+						startNumber:      startNumber,
+						manifestDuration: manifestDuration,
+						baseURL:          baseURL,
+						representationId: representationId,
+						media:            media,
+						playlistURL:      url,
+						streamName:       representationId,
+					}
+					getSegmentsFromSegmentTemplate(template, results)
 				} else {
 					var dashSegmentTimestamps []uint64
-
 					for _, timeline := range rep.SegmentTemplate.SegmentTimeline.S {
-						timestamps := calculateDashSegmentTimestamp(timeline.T, timeline.D, timeline.R)
+						timestampOfFirstSegment := *timeline.T
+						segmentDuration = timeline.D
+						var segmentRepeat int64
+						if timeline.R != nil {
+							segmentRepeat = *timeline.R
+						} else {
+							segmentRepeat = 0
+						}
+						timestamps := calculateDashSegmentTimestamp(timestampOfFirstSegment, segmentDuration, segmentRepeat)
 						dashSegmentTimestamps = append(dashSegmentTimestamps, timestamps...)
 					}
-					//segments := getSegmentsFromSegmentTimeline(dashSegmentTimestamps, baseURL, representationId, media)
-					//representation.Segments = segments
-					//representations.Push(representation)
+					timeline := segmentTimeline{
+						baseURL:          baseURL,
+						representationId: representationId,
+						media:            media,
+						playlistURL:      url,
+					}
+					getSegmentsFromSegmentTimeline(dashSegmentTimestamps, timeline, results)
 				}
 			}
 		}
