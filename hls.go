@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func decodeVariant(masterPlaylistURL, variantName, variantURL string, results *array.Array[Result]) error {
+func decodeVariant(masterPlaylistURL, variantName, variantURL string, results array.Array[Result]) error {
 	playlist, err := toolbox.SendRequest(toolbox.GET, variantURL, "", nil)
 	if err != nil {
 		return err
@@ -153,7 +153,7 @@ func decodeMaster(url string) (map[string]string, error) {
 	return streams, err
 }
 
-func parseHLS(url string) (*array.Array[Result], error) {
+func parseHLS(url string) (array.Array[Result], error) {
 	results := array.New[Result]()
 	variants, err := decodeMaster(url)
 	if err != nil {
