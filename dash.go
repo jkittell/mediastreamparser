@@ -132,7 +132,7 @@ func getSegmentsFromSegmentTemplate(segmentTemplate segmentTemplate, results arr
 }
 
 func getManifest(url string) *mpd.MPD {
-	manifestFile, err := toolbox.SendRequest(toolbox.GET, url, "", nil)
+	_, manifestFile, err := toolbox.SendRequest(toolbox.GET, url, "", nil)
 	if err != nil {
 		panic(err)
 	}

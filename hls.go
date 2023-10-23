@@ -12,7 +12,7 @@ import (
 )
 
 func decodeVariant(masterPlaylistURL, variantName, variantURL string, results array.Array[Result]) error {
-	playlist, err := toolbox.SendRequest(toolbox.GET, variantURL, "", nil)
+	_, playlist, err := toolbox.SendRequest(toolbox.GET, variantURL, "", nil)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func decodeVariant(masterPlaylistURL, variantName, variantURL string, results ar
 
 func decodeMaster(url string) (map[string]string, error) {
 	streams := make(map[string]string)
-	playlist, err := toolbox.SendRequest(toolbox.GET, url, "", nil)
+	_, playlist, err := toolbox.SendRequest(toolbox.GET, url, "", nil)
 	if err != nil {
 		return streams, err
 	}
