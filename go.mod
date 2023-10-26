@@ -3,7 +3,7 @@ module github.com/jkittell/mediastreamparser
 go 1.20
 
 require (
-	github.com/jkittell/array v0.0.0-20231026220933-7c3316f5a279
+	github.com/jkittell/array v0.0.0-20231026221347-37c0de93c457
 	github.com/jkittell/logger v0.0.0-20230511040509-b5564efdd5d2
 	github.com/jkittell/toolbox v0.0.0-20231023181202-8f682bad570a
 	github.com/unki2aut/go-mpd v0.0.0-20200811090714-f633ce416f26

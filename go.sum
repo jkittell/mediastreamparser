@@ -1,8 +1,8 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/google/uuid v1.4.0 h1:MtMxsa51/r9yyhkyLsVeVt0B+BGQZzpQiTQ4eHZ8bc4=
 github.com/google/uuid v1.4.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/jkittell/array v0.0.0-20231026220933-7c3316f5a279 h1:TqhVAcMJmwi9W5PfaDJVhyaE1Z0TBJUvWe5/X6gbx3w=
-github.com/jkittell/array v0.0.0-20231026220933-7c3316f5a279/go.mod h1:BBFehRHIhJVzGcBhqjBu/lswcmbAVX4gdM030WxgnuY=
+github.com/jkittell/array v0.0.0-20231026221347-37c0de93c457 h1:X1Bk6JUpa12EI13+dqaWUznQDYvz5tuonFCvQBgwYDI=
+github.com/jkittell/array v0.0.0-20231026221347-37c0de93c457/go.mod h1:BBFehRHIhJVzGcBhqjBu/lswcmbAVX4gdM030WxgnuY=
 github.com/jkittell/logger v0.0.0-20230511040509-b5564efdd5d2 h1:GadMF4SfkXZ4CXxYjxxLanXPv6bS8fUX1+o+Z0kEnvA=
 github.com/jkittell/logger v0.0.0-20230511040509-b5564efdd5d2/go.mod h1:fXw6H6cWfBXHG/iOYO7+wzJIx3HBRd+mrJaXf04Q2dU=
 github.com/jkittell/toolbox v0.0.0-20231023181202-8f682bad570a h1:jy5SRJG1QL+1C4vBMnsqddNSf0MirE7HAC64p82OWGA=
