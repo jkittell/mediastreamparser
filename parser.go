@@ -18,8 +18,8 @@ type Parser struct {
 	maxConcurrency int64
 }
 
-func (p *Parser) Run(url string, format ContentFormat) (array.Array[Result], error) {
-	var results array.Array[Result]
+func (p *Parser) Run(url string, format ContentFormat) (*array.Array[Result], error) {
+	results := array.New[Result]()
 	var err error
 
 	switch format {

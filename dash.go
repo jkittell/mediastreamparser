@@ -66,7 +66,7 @@ func calculateDashSegmentTimestamp(timestampOfFirstSegment uint64, segmentDurati
 	return timestamps
 }
 
-func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, segmentTimeline segmentTimeline, results array.Array[Result]) {
+func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, segmentTimeline segmentTimeline, results *array.Array[Result]) {
 	for _, timestamp := range dashSegmentTimestamps {
 		var representationRegex = `\$RepresentationID\$`
 		var timeRegex = `\$Time\$`
@@ -92,7 +92,7 @@ func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, segmentTimel
 }
 
 // TODO init
-func getSegmentsFromSegmentTemplate(segmentTemplate segmentTemplate, results array.Array[Result]) {
+func getSegmentsFromSegmentTemplate(segmentTemplate segmentTemplate, results *array.Array[Result]) {
 	// get the segment size
 	// duration="900000" / timescale="90000"
 	// so 10 second segments
@@ -144,7 +144,7 @@ func getManifest(url string) *mpd.MPD {
 	return dashManifest
 }
 
-func parseDASH(url string) (array.Array[Result], error) {
+func parseDASH(url string) (*array.Array[Result], error) {
 	results := array.New[Result]()
 	representations := make(map[string]string)
 
