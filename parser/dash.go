@@ -131,17 +131,18 @@ func getSegmentsFromSegmentTemplate(segmentTemplate segmentTemplate, results *ar
 	}
 }
 
-func getManifest(url string) *mpd.MPD {
+func getManifest(url string) (*mpd.MPD, error) {
+	dashManifest := new(mpd.MPD)
 	_, manifestFile, err := toolbox.SendRequest(toolbox.GET, url, "", nil)
 	if err != nil {
-		panic(err)
+		return dashManifest, err
 	}
-	dashManifest := new(mpd.MPD)
+
 	err = dashManifest.Decode(manifestFile)
 	if err != nil {
-		panic(err)
+		return dashManifest, err
 	}
-	return dashManifest
+	return dashManifest, nil
 }
 
 func parseDASH(url string) (*array.Array[Segment], error) {
@@ -157,7 +158,10 @@ func parseDASH(url string) (*array.Array[Segment], error) {
 
 	baseURL = toolbox.BaseURL(url)
 
-	dashManifest := getManifest(url)
+	dashManifest, err := getManifest(url)
+	if err != nil {
+		return results, err
+	}
 
 	var manifestDuration float64
 
