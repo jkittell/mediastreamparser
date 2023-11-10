@@ -12,7 +12,7 @@ import (
 func scanSegments(segments *array.Array[mediastreamparser.Segment]) {
 	for i := 0; i < segments.Length(); i++ {
 		s := segments.Lookup(i)
-		statusCode, _, err := toolbox.SendRequest(toolbox.GET, s.SegmentURL, "", nil)
+		statusCode, _, err := toolbox.SendRequest(toolbox.HEAD, s.SegmentURL, "", nil)
 		if err != nil {
 			color.Red("%s,%s", err.Error(), s.SegmentURL)
 		}
