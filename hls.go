@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func decodeVariant(masterPlaylistURL, variantName, variantURL string, results *array.Array[Result]) error {
+func decodeVariant(masterPlaylistURL, variantName, variantURL string, results *array.Array[Segment]) error {
 	_, playlist, err := toolbox.SendRequest(toolbox.GET, variantURL, "", nil)
 	if err != nil {
 		return err
@@ -69,14 +69,14 @@ func decodeVariant(masterPlaylistURL, variantName, variantURL string, results *a
 								SegmentURL = SegmentName
 							}
 
-							result := Result{
-								playlistURL:    masterPlaylistURL,
-								streamName:     variantName,
-								streamURL:      variantURL,
-								segmentName:    SegmentName,
-								segmentURL:     SegmentURL,
-								byteRangeStart: ByteRangeStart,
-								byteRangeSize:  ByteRangeSize,
+							result := Segment{
+								PlaylistURL:    masterPlaylistURL,
+								StreamName:     variantName,
+								StreamURL:      variantURL,
+								SegmentName:    SegmentName,
+								SegmentURL:     SegmentURL,
+								ByteRangeStart: ByteRangeStart,
+								ByteRangeSize:  ByteRangeSize,
 							}
 							results.Push(result)
 						} else {
@@ -91,14 +91,14 @@ func decodeVariant(masterPlaylistURL, variantName, variantURL string, results *a
 						} else {
 							SegmentURL = SegmentName
 						}
-						result := Result{
-							playlistURL:    masterPlaylistURL,
-							streamName:     variantName,
-							streamURL:      variantURL,
-							segmentName:    SegmentName,
-							segmentURL:     SegmentURL,
-							byteRangeStart: ByteRangeStart,
-							byteRangeSize:  ByteRangeSize,
+						result := Segment{
+							PlaylistURL:    masterPlaylistURL,
+							StreamName:     variantName,
+							StreamURL:      variantURL,
+							SegmentName:    SegmentName,
+							SegmentURL:     SegmentURL,
+							ByteRangeStart: ByteRangeStart,
+							ByteRangeSize:  ByteRangeSize,
 						}
 						results.Push(result)
 					}
@@ -153,8 +153,8 @@ func decodeMaster(url string) (map[string]string, error) {
 	return streams, err
 }
 
-func parseHLS(url string) (*array.Array[Result], error) {
-	results := array.New[Result]()
+func parseHLS(url string) (*array.Array[Segment], error) {
+	results := array.New[Segment]()
 	variants, err := decodeMaster(url)
 	if err != nil {
 		return results, err

@@ -66,7 +66,7 @@ func calculateDashSegmentTimestamp(timestampOfFirstSegment uint64, segmentDurati
 	return timestamps
 }
 
-func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, segmentTimeline segmentTimeline, results *array.Array[Result]) {
+func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, segmentTimeline segmentTimeline, results *array.Array[Segment]) {
 	for _, timestamp := range dashSegmentTimestamps {
 		var representationRegex = `\$RepresentationID\$`
 		var timeRegex = `\$Time\$`
@@ -78,21 +78,21 @@ func getSegmentsFromSegmentTimeline(dashSegmentTimestamps []uint64, segmentTimel
 		var n = regexp.MustCompile(timeRegex)
 		segmentName = n.ReplaceAllString(segmentName, fmt.Sprint(timestamp))
 
-		result := Result{
-			playlistURL:    segmentTimeline.playlistURL,
-			streamName:     segmentTimeline.representationId,
-			streamURL:      "",
-			segmentName:    segmentName,
-			segmentURL:     fmt.Sprintf("%s/%s", segmentTimeline.baseURL, segmentName),
-			byteRangeStart: -1,
-			byteRangeSize:  -1,
+		result := Segment{
+			PlaylistURL:    segmentTimeline.playlistURL,
+			StreamName:     segmentTimeline.representationId,
+			StreamURL:      "",
+			SegmentName:    segmentName,
+			SegmentURL:     fmt.Sprintf("%s/%s", segmentTimeline.baseURL, segmentName),
+			ByteRangeStart: -1,
+			ByteRangeSize:  -1,
 		}
 		results.Push(result)
 	}
 }
 
 // TODO init
-func getSegmentsFromSegmentTemplate(segmentTemplate segmentTemplate, results *array.Array[Result]) {
+func getSegmentsFromSegmentTemplate(segmentTemplate segmentTemplate, results *array.Array[Segment]) {
 	// get the segment size
 	// duration="900000" / timescale="90000"
 	// so 10 second segments
@@ -118,14 +118,14 @@ func getSegmentsFromSegmentTemplate(segmentTemplate segmentTemplate, results *ar
 		var n = regexp.MustCompile(numberRegex)
 		segmentName = n.ReplaceAllString(segmentName, segmentNumber)
 
-		result := Result{
-			playlistURL:    segmentTemplate.playlistURL,
-			streamName:     segmentTemplate.streamName,
-			streamURL:      "",
-			segmentName:    segmentName,
-			segmentURL:     fmt.Sprintf("%s/%s", segmentTemplate.baseURL, segmentName),
-			byteRangeStart: -1,
-			byteRangeSize:  -1,
+		result := Segment{
+			PlaylistURL:    segmentTemplate.playlistURL,
+			StreamName:     segmentTemplate.streamName,
+			StreamURL:      "",
+			SegmentName:    segmentName,
+			SegmentURL:     fmt.Sprintf("%s/%s", segmentTemplate.baseURL, segmentName),
+			ByteRangeStart: -1,
+			ByteRangeSize:  -1,
 		}
 		results.Push(result)
 	}
@@ -144,8 +144,8 @@ func getManifest(url string) *mpd.MPD {
 	return dashManifest
 }
 
-func parseDASH(url string) (*array.Array[Result], error) {
-	results := array.New[Result]()
+func parseDASH(url string) (*array.Array[Segment], error) {
+	results := array.New[Segment]()
 	representations := make(map[string]string)
 
 	var segmentDuration uint64
