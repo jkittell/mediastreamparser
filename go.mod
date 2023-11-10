@@ -1,4 +1,4 @@
-module mediastreamparser
+module github.com/jkittell/mediastreamparser
 
 go 1.20
 

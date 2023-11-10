@@ -4,12 +4,12 @@ import (
 	"flag"
 	"github.com/fatih/color"
 	"github.com/jkittell/array"
+	"github.com/jkittell/mediastreamparser/parser"
 	"github.com/jkittell/toolbox"
 	"log"
-	"mediastreamparser"
 )
 
-func scanSegments(segments *array.Array[mediastreamparser.Segment]) {
+func scanSegments(segments *array.Array[parser.Segment]) {
 	for i := 0; i < segments.Length(); i++ {
 		s := segments.Lookup(i)
 		statusCode, _, err := toolbox.SendRequest(toolbox.HEAD, s.SegmentURL, "", nil)
@@ -33,7 +33,7 @@ func main() {
 	flag.Parse()
 
 	if *scan {
-		segments, err := mediastreamparser.GetSegments(*url)
+		segments, err := parser.GetSegments(*url)
 		if err != nil {
 			log.Println(err)
 		}
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	if *info {
-		segments, err := mediastreamparser.GetSegments(*url)
+		segments, err := parser.GetSegments(*url)
 		if err != nil {
 			log.Println(err)
 		}

@@ -1,4 +1,4 @@
-package mediastreamparser
+package parser
 
 import (
 	"bufio"
