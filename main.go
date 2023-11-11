@@ -3,28 +3,9 @@ package main
 import (
 	"flag"
 	"github.com/fatih/color"
-	"github.com/jkittell/array"
 	"github.com/jkittell/mediastreamparser/parser"
-	"github.com/jkittell/toolbox"
 	"log"
 )
-
-func scanSegments(segments *array.Array[parser.Segment]) {
-	for i := 0; i < segments.Length(); i++ {
-		s := segments.Lookup(i)
-		statusCode, _, err := toolbox.SendRequest(toolbox.HEAD, s.SegmentURL, "", nil)
-		if err != nil {
-			color.Red("%s,%s", err.Error(), s.SegmentURL)
-		}
-		if statusCode == 200 {
-			color.Green("%d,%s\n", statusCode, s.SegmentURL)
-		} else if statusCode == 500 {
-			color.Red("%d,%s\n", statusCode, s.SegmentURL)
-		} else {
-			color.Yellow("%d,%s\n", statusCode, s.SegmentURL)
-		}
-	}
-}
 
 func main() {
 	url := flag.String("url", "", "url of hls playlist or dash manifest")
@@ -38,7 +19,17 @@ func main() {
 			log.Println(err)
 		}
 
-		scanSegments(segments)
+		scans := parser.ScanSegments(segments)
+		for i := 0; i < scans.Length(); i++ {
+			s := scans.Lookup(i)
+			if s.StatusCode == 200 {
+				color.Green("%d,%s\n", s.StatusCode, s.SegmentURL)
+			} else if s.StatusCode == 500 {
+				color.Red("%d,%s\n", s.StatusCode, s.SegmentURL)
+			} else {
+				color.Yellow("%d,%s\n", s.StatusCode, s.SegmentURL)
+			}
+		}
 	}
 
 	if *info {

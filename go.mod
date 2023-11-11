@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/fatih/color v1.16.0
 	github.com/jkittell/array v0.0.0-20231026221347-37c0de93c457
+	github.com/jkittell/ccur v0.0.0-20231111132524-0155451945a9
 	github.com/jkittell/toolbox v0.0.0-20231025185513-a63055b48f44
 	github.com/unki2aut/go-mpd v0.0.0-20200811090714-f633ce416f26
 )
