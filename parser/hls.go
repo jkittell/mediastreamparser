@@ -53,6 +53,9 @@ func decodeVariant(masterPlaylistURL, variantName, variantURL string, results *a
 
 		for _, format := range segmentFormats {
 			var match bool
+			if strings.HasPrefix(line, "MISSING_") {
+				continue
+			}
 			if strings.Contains(line, format) {
 				match = true
 				if match {
